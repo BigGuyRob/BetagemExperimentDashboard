@@ -159,8 +159,8 @@ public class DashboardController {
 					try {
 						paths = Files.readAllLines(Paths.get(certLocations.getPath()));
 					} catch (IOException e){ flag = true;}
-					rootCertPath = paths.get(0);
-					privateKeyPath = paths.get(1);
+					privateKeyPath = paths.get(0);
+					rootCertPath = paths.get(1);
 					device_listPath = paths.get(2);
 					certs.clear();
 					certs.addAll(paths);
