@@ -173,6 +173,7 @@
                                        <children>
                                           <Button fx:id="btnScan" mnemonicParsing="false" onAction="#ScanPorts" text="Scan Ports" />
                                           <Button fx:id="btnconAWS" mnemonicParsing="false" onAction="#connectToAWS" text="Connect to AWS" />
+                                          <ComboBox fx:id="comboCerts" onAction="#chooseKeyFiles" prefHeight="25.0" prefWidth="101.0" />
                                        </children>
                                     </HBox>
                                     <ComboBox fx:id="comboSelComm" disable="true" onAction="#selectDevice" prefHeight="25.0" prefWidth="193.0" />

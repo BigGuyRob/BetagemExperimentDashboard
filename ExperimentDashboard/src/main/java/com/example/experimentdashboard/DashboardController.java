@@ -1,10 +1,6 @@
 package com.example.experimentdashboard;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -45,6 +41,16 @@ import javax.swing.*;
 public class DashboardController {
 	@FXML
 	private ComboBox<String> comboSelComm;
+	@FXML
+	private ComboBox<String> comboCerts;
+	File certLocations = new File("C:/Data/certList.txt");
+	private ObservableList<String> certs = FXCollections.observableArrayList("Private Key","Root Certificate","Device List");
+	private ObservableList<String> Requiredcerts = FXCollections.observableArrayList("Private Key","Root Certificate","Device List");
+	boolean certFill = false;
+	boolean flag = true; //for if we had to create a new file
+	private String privateKeyPath = "Private Key";
+	private String rootCertPath = "Root Certificate";
+	private String device_listPath = "Device List";
 	@FXML
 	private ComboBox<String> comboSensor;
 	private ObservableList<String> SensorsList = FXCollections.observableArrayList("BPW34 Silicon PIN Photodiode");
@@ -124,10 +130,12 @@ public class DashboardController {
 	private ObservableList<String> options = FXCollections.observableArrayList();
     private AWSIotQos TestTopicQos = AWSIotQos.QOS0;
     private String experimentTopic = "MKR_WIFI_experiment";
-    
+	private String clientEndpoint = "a21hi64alhm13r-ats.iot.us-east-1.amazonaws.com";   // use value returned by describe-endpoint --endpoint-type "iot:Data-ATS"
+
 	private String purpose = "def";
 	@FXML
 	private void connectToAWS(ActionEvent event) {
+		flag = false;
 		if(purpose == "AWS") {
 			purpose = "def"; //reset the purpose
 			if(client != null) {
@@ -145,48 +153,96 @@ public class DashboardController {
 				}
 			}
 		}else {
-			//System.out.println(getClass().getResource("dashboard-certificate.pem.crt").toString());
-			String certificateFile = "C:\\Users\\rob\\Desktop\\dashboard_cert_folder\\dashboard-certificate.pem.crt";
-			String privateKeyFile = "C:\\Users\\rob\\Desktop\\dashboard_cert_folder\\dashboard-private.pem.key";
-			String clientEndpoint = "a21hi64alhm13r-ats.iot.us-east-1.amazonaws.com";   // use value returned by describe-endpoint --endpoint-type "iot:Data-ATS"
+			String errorText = "";
+			try {
+					List<String> paths = null;
+					try {
+						paths = Files.readAllLines(Paths.get(certLocations.getPath()));
+					} catch (IOException e){ flag = true;}
+					rootCertPath = paths.get(0);
+					privateKeyPath = paths.get(1);
+					device_listPath = paths.get(2);
+					certs.clear();
+					certs.addAll(paths);
+					comboCerts.setItems(certs);
+			} catch (IndexOutOfBoundsException e){
+				//if we couldn't read data that doesnt mean we didnt just add the data
+
+			}
+			//flag indicates the file could not be read or was not created
+			if(flag){
+				//in that case we need to ping user to upload required certs
+				comboCerts.setItems(Requiredcerts);
+				errorText += "File could not be read/accessed please upload certificates\n";
+			}
+			String certificateFile = rootCertPath;
+			String privateKeyFile = privateKeyPath;
+			String device_list = device_listPath;
+			certs.clear();
+			certs.add(privateKeyPath);
+			certs.add(rootCertPath);
+			certs.add(device_listPath);
+			comboCerts.setItems(certs);
 			String clientId = "betagem_dashboard";
-		    
+			File tmp_cert = new File(rootCertPath);
+			File tmp_privatekey = new File(privateKeyPath);
+			File tmp_device_list = new File(device_list);
+			if(tmp_cert.exists() == false){
+				errorText += "\nCould not find file root certificate:\n" + certificateFile;
+			}
+			if(tmp_privatekey.exists() == false){
+				errorText += "\nCould not find file private key:\n" + privateKeyFile;
+			}
+			if(tmp_device_list.exists() == false){
+				errorText += "\nCould not find device list:\n" + device_list;
+			}
 		    //so that the buttons know what to do 
 			//now that everything is loaded
-			SampleUtils.KeyStorePasswordPair pair = SampleUtils.getKeyStorePasswordPair(certificateFile, privateKeyFile);
-			client = new AWSIotMqttClient(clientEndpoint, clientId, pair.keyStore, pair.keyPassword);
-			try {
-				client.setPort(8883);
-				client.connect();
-				//System.out.println(client.getConnectionStatus());
-				options.clear();
+			if(errorText == "") {
+				SampleUtils.KeyStorePasswordPair pair = SampleUtils.getKeyStorePasswordPair(tmp_cert.getAbsolutePath(), tmp_privatekey.getAbsolutePath());
 				try {
-					List<String> allLines = Files.readAllLines(Paths.get("C:\\Users\\rob\\Desktop\\dashboard_cert_folder\\device_list.txt"));
-					options.addAll(allLines);
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					//e1.printStackTrace();
-					options.add("no devices");
+					client = new AWSIotMqttClient(clientEndpoint, clientId, pair.keyStore, pair.keyPassword);
+				}catch(NullPointerException e){
+					errorText+= "Could not create AWS client due to file paths";
 				}
-			    comboSelComm.setItems(options);
-			    comboSelComm.setDisable(false);//enable the box
-			    disableInput(false); //re-enable input for machine but they will now be dual purpose
-			    btnScan.setDisable(true); //disable comm port scanner
-			    //now I do something called set purpose
-			    purpose = "AWS";
-			    btnconAWS.setText("Disconnect AWS");
-			    String p = "MKR_WIFI_experiment";
-			    comboSensor.setItems(SensorsList);
-				comboProbe.setItems(ProbesList);
-				AWSIotTopic topic = new TestTopicListener(p, TestTopicQos,this);
-		        client.subscribe(topic, true);
-			} catch (AWSIotException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				try {
+					client.setPort(8883);
+					client.connect();
+					//System.out.println(client.getConnectionStatus());
+					options.clear();
+					try {
+						List<String> allLines = Files.readAllLines(Paths.get(device_list));
+						options.addAll(allLines);
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						//e1.printStackTrace();
+						options.add("no devices");
+					}
+					comboSelComm.setItems(options);
+					comboSelComm.setDisable(false);//enable the box
+					disableInput(false); //re-enable input for machine but they will now be dual purpose
+					btnScan.setDisable(true); //disable comm port scanner
+					//now I do something called set purpose
+					purpose = "AWS";
+					btnconAWS.setText("Disconnect AWS");
+					String p = "MKR_WIFI_experiment";
+					comboSensor.setItems(SensorsList);
+					comboProbe.setItems(ProbesList);
+					AWSIotTopic topic = new TestTopicListener(p, TestTopicQos, this);
+					client.subscribe(topic, true);
+					outputArea.setText("Connection Successful to:\n" + clientEndpoint);
+					writeSavedData(); //once a successful connection is made write the saved data
+
+					fillDefaultValueLabels();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					outputArea.setText(errorText);
+				}
+			}else{
+				outputArea.setText(errorText + "\n" + "Upload certificates and device list to retry");
 			}
 		}
 	}
-	
 	@FXML 
 	private void ScanPorts(ActionEvent event) {
 		if(purpose != "SER") {
@@ -210,6 +266,7 @@ public class DashboardController {
 			comboSelComm.setItems(options);
 			purpose = "SER";//set the purpose for the rest of the application
 			btnScan.setText("Stop Serial");
+			fillDefaultValueLabels();
 			btnconAWS.setDisable(true);
 		}else {
 			myCommPort = null;
@@ -222,8 +279,6 @@ public class DashboardController {
 			disableInput(true);//true because back to square one
 		}
 	}
-
-	
 	private int result = -1; //This is the number of bytes read
 	@FXML
 	private void beginExperiment(ActionEvent event) {
@@ -240,7 +295,6 @@ public class DashboardController {
 			}
 		}
 	}
-	
 	private String val = "";
 	private int paramCounter = 0;
 	@FXML
@@ -258,7 +312,6 @@ public class DashboardController {
 			}
 		}
 	}
-	
 	@FXML
 	private void sendNewParameters(ActionEvent event) {
 		if(purpose == "SER") {
@@ -285,7 +338,6 @@ public class DashboardController {
 			}
 		}
 	}
-	
 	public void updateOutputArea(String payload) {
 		if(payload.contains("retp")) {
 			Platform.runLater(() -> fillParams(payload));
@@ -294,7 +346,6 @@ public class DashboardController {
 		}
 		
 	}
-	
 	@FXML
 	private void selectDevice(ActionEvent event) {
 		if(purpose == "SER") {
@@ -310,8 +361,6 @@ public class DashboardController {
 			btnGetParameters.setDisable(false);
 		}
 	}
-
-	
 	private String validateInput() {
 		String errText = "";
 		double temp_End = -1;
@@ -381,8 +430,6 @@ public class DashboardController {
 		
 		return errText;
 	}
-
-	
 	private void fillParams(String cmd) {
 		String[] cmdSplit = cmd.split("/");
 		int paramCounter = 0;
@@ -399,8 +446,6 @@ public class DashboardController {
 		}
 		fillCurrentValueLabels();
 	}
-	
-	
 	private void fillCurrentValueLabels() {
 		tx_current_start.setText(String.valueOf(PARAMS[0]));
 		tx_current_end.setText(String.valueOf(PARAMS[1]));
@@ -409,8 +454,14 @@ public class DashboardController {
 		tx_current_movementTime.setText(String.valueOf(PARAMS[4]));
 		tx_current_exposureTime.setText(String.valueOf(PARAMS[5]));
 	}
-	
-	
+	private void fillDefaultValueLabels(){
+		txtServoStartPos.setText(String.valueOf(DEFAULT_START_POS));
+		txtServoEndPos.setText(String.valueOf(DEFAULT_END_POS));
+		txtDelta.setText(String.valueOf(DEFAULT_DELTA));
+		txtNumDataPoints.setText(String.valueOf(DEFAULT_NUMDATAPOINTS));
+		txtMovementTime.setText(String.valueOf(DEFAULT_MOVEMENTTIME));
+		txtExposureTime.setText(String.valueOf(DEFAULT_EXPOSURETIME));
+	}
 	private void appendToFile() {
 		if(append != null) {
 		FileWriter fr;
@@ -424,8 +475,6 @@ public class DashboardController {
 			}
 		}
 	}
-	
-	
 	@FXML
 	private void chooseFile(ActionEvent event) {
 		JFileChooser fc = new JFileChooser();
@@ -442,8 +491,6 @@ public class DashboardController {
         	btnChooseFile.setText("Choose Output File");
         }
 	}
-
-
 	private void disableInput(boolean state) {
 		btnBegin.setDisable(state);
 		btnSendParameters.setDisable(state);
@@ -451,8 +498,6 @@ public class DashboardController {
 		comboSensor.setDisable(state);
 		comboProbe.setDisable(state);
 	}
-	
-	
 	public void finalDisconnect() {
 		try {
 			client.disconnect();
@@ -461,8 +506,6 @@ public class DashboardController {
 			e.printStackTrace();
 		}
 	}
-
-
 	private void beginSerial() {
 		if(myCommPort != null) {
 			outputArea.setText("");
@@ -522,8 +565,6 @@ public class DashboardController {
 			outputArea.setText("No Device Selected");
 		}
 	}
-
-	
 	private void getCurrentParamsSerial() {
 		if(myCommPort !=null) {
 			myCommPort.openPort();
@@ -560,8 +601,6 @@ public class DashboardController {
 			outputArea.setText("No Device Selected");
 		}
 	}
-
-	
 	private void sendParamsSerial() {
 		String[] tempParams = {txtServoStartPos.getText(), txtServoEndPos.getText(), txtDelta.getText(),txtNumDataPoints.getText(), txtMovementTime.getText(), txtExposureTime.getText()};
 		String errText = validateInput();
@@ -606,5 +645,63 @@ public class DashboardController {
 		}else {//if we did not validate input
 			outputArea.setText(errText);
 		}
+	}
+	private void writeSavedData(){
+		//first erase contents of file
+		try {
+			File certLocationFile = new File(certLocations.getAbsolutePath());
+			FileOutputStream mystream = new FileOutputStream(certLocationFile, false); // true to append
+			mystream.write(privateKeyPath.getBytes());
+			mystream.write(("\n").getBytes());
+			mystream.write(rootCertPath.getBytes());
+			mystream.write(("\n").getBytes());
+			mystream.write(device_listPath.getBytes());
+			mystream.close();
+		}catch (IOException e){
+			//do nothing if for some reason we couldnt get to file
+			outputArea.setText("Failed to save data to cert locations");
+		}
+	}
+	@FXML
+	private void chooseKeyFiles(ActionEvent event){
+		int selectedItemIndex = comboCerts.getSelectionModel().getSelectedIndex();
+		//the order is private key, root cert, device list
+		if(selectedItemIndex == 0) {//this would be the private key
+			JFileChooser fc = new JFileChooser();
+			int returnVal = fc.showOpenDialog(null);
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+				File file = fc.getSelectedFile();
+				privateKeyPath = file.getAbsolutePath();
+			} else {
+				privateKeyPath = "Private Key";
+			}
+		}
+		if(selectedItemIndex == 1){ //for the root cert
+			JFileChooser fc = new JFileChooser();
+			int returnVal = fc.showOpenDialog(null);
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+				File file = fc.getSelectedFile();
+				rootCertPath = file.getAbsolutePath();
+			} else {
+				rootCertPath = "Root Certificate";
+			}
+		}
+		if(selectedItemIndex == 2){
+			JFileChooser fc = new JFileChooser();
+			int returnVal = fc.showOpenDialog(null);
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+				File file = fc.getSelectedFile();
+				device_listPath = file.getAbsolutePath();
+			} else {
+				device_listPath = "Device List";
+			}
+		}
+		ObservableList<String> currentCerts = FXCollections.observableArrayList();
+		currentCerts.add(privateKeyPath);
+		currentCerts.add(rootCertPath);
+		currentCerts.add(device_listPath);
+
+		//now I want to put the certs observable list back together
+		comboCerts.setItems(currentCerts);
 	}
 }

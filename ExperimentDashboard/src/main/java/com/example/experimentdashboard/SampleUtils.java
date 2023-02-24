@@ -110,6 +110,7 @@ public class SampleUtils {
             return (List<Certificate>) certFactory.generateCertificates(stream);
         } catch (IOException | CertificateException e) {
             System.out.println("Failed to load certificate file " + filename);
+            e.printStackTrace();
         }
         return null;
     }
@@ -126,6 +127,7 @@ public class SampleUtils {
             privateKey = PrivateKeyReader.getPrivateKey(stream, algorithm);
         } catch (IOException | GeneralSecurityException e) {
             System.out.println("Failed to load private key from file " + filename);
+            e.printStackTrace();
         }
 
         return privateKey;
