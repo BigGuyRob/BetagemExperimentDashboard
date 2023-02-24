@@ -14,11 +14,11 @@
 
 <AnchorPane xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.experimentdashboard.DashboardController">
    <children>
-      <Pane prefHeight="693.0" prefWidth="650.0">
+      <Pane prefHeight="693.0" prefWidth="1052.0">
          <children>
-            <HBox prefHeight="693.0" prefWidth="650.0">
+            <HBox prefHeight="693.0" prefWidth="1130.0">
                <children>
-                  <VBox alignment="TOP_CENTER" prefHeight="229.0" prefWidth="650.0">
+                  <VBox alignment="TOP_CENTER" prefHeight="693.0" prefWidth="1091.0">
                      <children>
                         <Label prefHeight="53.0" prefWidth="445.0" text="Betagem Air Filter Monitor" textAlignment="CENTER" textOverrun="WORD_ELLIPSIS" wrapText="true">
                            <font>
@@ -30,7 +30,7 @@
                               <Font size="36.0" />
                            </font>
                         </Label>
-                        <HBox prefHeight="397.0" prefWidth="650.0">
+                        <HBox prefHeight="593.0" prefWidth="1091.0">
                            <children>
                               <VBox prefHeight="100.0" prefWidth="291.0">
                                  <children>
@@ -76,17 +76,6 @@
                                        </font>
                                     </Label>
                                     <TextField fx:id="txtExposureTime" />
-                                    <Label text="Comm Port: ">
-                                       <font>
-                                          <Font size="27.0" />
-                                       </font>
-                                    </Label>
-                                    <HBox prefHeight="100.0" prefWidth="200.0">
-                                       <children>
-                                          <Button fx:id="btnScan" mnemonicParsing="false" onAction="#ScanPorts" text="Scan Ports" />
-                                          <Button fx:id="btnconAWS" mnemonicParsing="false" onAction="#connectToAWS" text="Connect to AWS" />
-                                       </children></HBox>
-                                    <ComboBox fx:id="comboSelComm" disable="true" onAction="#selectDevice" prefHeight="25.0" prefWidth="193.0" />
                                  </children>
                               </VBox>
                               <VBox prefHeight="431.0" prefWidth="24.0">
@@ -160,22 +149,38 @@
                                     <Text strokeType="OUTSIDE" strokeWidth="0.0" />
                                     <Button fx:id="btnGetParameters" disable="true" mnemonicParsing="false" onAction="#getCurrentParameters" text="Get" />
                                  </children></VBox>
-                              <VBox prefHeight="414.0" prefWidth="347.0">
+                              <VBox prefHeight="559.0" prefWidth="307.0">
                                  <children>
                                     <Label prefHeight="46.0" prefWidth="267.0" text="Notes:">
                                        <font>
                                           <Font size="38.0" />
                                        </font>
                                     </Label>
-                                    <HBox prefHeight="100.0" prefWidth="200.0">
+                                    <HBox prefHeight="31.0" prefWidth="441.0">
                                        <children>
                                           <ComboBox fx:id="comboSensor" disable="true" prefWidth="150.0" promptText="Sensor" />
                                           <ComboBox fx:id="comboProbe" disable="true" prefWidth="150.0" promptText="Probe" />
                                        </children>
                                     </HBox>
-                                    <TextArea fx:id="notes" prefHeight="189.0" prefWidth="341.0" promptText="Notes..." />
+                                    <TextArea fx:id="notes" prefHeight="189.0" prefWidth="148.0" promptText="Notes..." />
                                     <Label />
-                                    <HBox prefHeight="100.0" prefWidth="200.0">
+                                    <Label text="Comm Port: ">
+                                       <font>
+                                          <Font size="27.0" />
+                                       </font>
+                                    </Label>
+                                    <HBox prefHeight="27.0" prefWidth="291.0">
+                                       <children>
+                                          <Button fx:id="btnScan" mnemonicParsing="false" onAction="#ScanPorts" text="Scan Ports" />
+                                          <Button fx:id="btnconAWS" mnemonicParsing="false" onAction="#connectToAWS" text="Connect to AWS" />
+                                       </children>
+                                    </HBox>
+                                    <ComboBox fx:id="comboSelComm" disable="true" onAction="#selectDevice" prefHeight="25.0" prefWidth="193.0" />
+                                 </children>
+                              </VBox>
+                              <VBox prefHeight="414.0" prefWidth="347.0">
+                                 <children>
+                                    <HBox prefHeight="27.0" prefWidth="263.0">
                                        <children>
                                           <Button fx:id="btnBegin" disable="true" mnemonicParsing="false" onAction="#beginExperiment" text="Begin Experiment" />
                                           <Button fx:id="btnSendParameters" disable="true" mnemonicParsing="false" onAction="#sendNewParameters" prefHeight="25.0" prefWidth="137.0" text="Send New Parameters" textOverrun="WORD_ELLIPSIS" />
@@ -187,7 +192,7 @@
                                        </font>
                                     </Label>
                                     <Button fx:id="btnChooseFile" mnemonicParsing="false" onAction="#chooseFile" prefHeight="25.0" prefWidth="319.0" text="Choose Output File" />
-                                    <TextArea fx:id="outputArea" prefHeight="312.0" prefWidth="343.0" promptText="output" />
+                                    <TextArea fx:id="outputArea" prefHeight="501.0" prefWidth="347.0" promptText="output" />
                                  </children>
                               </VBox>
                            </children>
