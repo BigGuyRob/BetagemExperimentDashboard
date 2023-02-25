@@ -282,11 +282,29 @@ public class DashboardController {
 	private int result = -1; //This is the number of bytes read
 	@FXML
 	private void beginExperiment(ActionEvent event) {
+		outputArea.setText("");
 		if(purpose == "SER") {
 			beginSerial();
 		}else if(purpose == "AWS") {
 			if(client != null) {
 				try {
+					outputAreaTest = "";
+					if(comboSensor.getSelectionModel().getSelectedIndex() < 0) comboSensor.getSelectionModel().select(0); //default
+					if(comboProbe.getSelectionModel().getSelectedIndex() < 0) comboProbe.getSelectionModel().select(0); //default
+					outputAreaTest += ("----NOTES----\n");
+					String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
+					outputAreaTest+= timeStamp + "\n";
+					outputAreaTest += "Sensor Selected: " + comboSensor.getSelectionModel().getSelectedItem() +"\n";
+					outputAreaTest += "Probe Selected: " + comboProbe.getSelectionModel().getSelectedItem() + "\n";
+					outputAreaTest += (notes.getText() + "\n");
+					notes.setText("");
+					outputAreaTest += ("----END NOTES----\n");
+					outputAreaTest += ("----PARAMETERS----\n");
+					for(int i = 0; i < NUM_PARAMETERS; i ++) {
+						outputAreaTest += Plabels[i] + " : " + PARAMS[i] +"\n";
+					}
+					outputAreaTest += "----END PARAMETERS----\n";
+					outputArea.setText(outputAreaTest);
 					client.publish(subscribedTopic, "begin");
 				} catch (AWSIotException e) {
 					// TODO Auto-generated catch block
@@ -314,6 +332,7 @@ public class DashboardController {
 	}
 	@FXML
 	private void sendNewParameters(ActionEvent event) {
+		outputArea.setText("");
 		if(purpose == "SER") {
 			sendParamsSerial();
 		}else if(purpose == "AWS") {
@@ -342,9 +361,8 @@ public class DashboardController {
 		if(payload.contains("retp")) {
 			Platform.runLater(() -> fillParams(payload));
 		}else {
-			Platform.runLater(() -> outputArea.setText(payload));
+			Platform.runLater(() -> {outputArea.appendText(payload); if(payload.contains("!")){appendToFile();}});
 		}
-		
 	}
 	@FXML
 	private void selectDevice(ActionEvent event) {
