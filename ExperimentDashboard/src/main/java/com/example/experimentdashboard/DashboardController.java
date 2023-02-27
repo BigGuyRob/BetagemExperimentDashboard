@@ -184,7 +184,7 @@ public class DashboardController {
 			certs.add(rootCertPath);
 			certs.add(device_listPath);
 			comboCerts.setItems(certs);
-			String clientId = "betagem_dashboard";
+			String clientId = "betagem_dashboard" + System.currentTimeMillis();
 			File tmp_cert = new File(rootCertPath);
 			File tmp_privatekey = new File(privateKeyPath);
 			File tmp_device_list = new File(device_list);
@@ -232,7 +232,7 @@ public class DashboardController {
 
 					outputArea.setText("Connection Successful to:\n" + clientEndpoint);
 					writeSavedData(); //once a successful connection is made write the saved data
-
+					client.setKeepAliveInterval(65535);
 					fillDefaultValueLabels();
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
