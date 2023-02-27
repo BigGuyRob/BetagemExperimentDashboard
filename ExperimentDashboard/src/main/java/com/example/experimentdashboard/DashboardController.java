@@ -128,19 +128,20 @@ public class DashboardController {
 	private SerialPort myCommPort = null;
 	private ArrayList<Integer> availablePorts = new ArrayList<Integer>();
 	private ObservableList<String> options = FXCollections.observableArrayList();
-    private AWSIotQos TestTopicQos = AWSIotQos.QOS0;
+    private AWSIotQos TestTopicQos = AWSIotQos.QOS1;
     private String experimentTopic = "MKR_WIFI_experiment";
 	private String clientEndpoint = "a21hi64alhm13r-ats.iot.us-east-1.amazonaws.com";   // use value returned by describe-endpoint --endpoint-type "iot:Data-ATS"
 
+	private ArrayList<String> payloads = new ArrayList<String>();
 	private String purpose = "def";
 	@FXML
 	private void connectToAWS(ActionEvent event) {
 		flag = false;
 		if(purpose == "AWS") {
-			purpose = "def"; //reset the purpose
 			if(client != null) {
 				try {
 					client.disconnect();
+					purpose = "def"; //reset the purpose
 					btnconAWS.setText("Connect to AWS");
 					btnScan.setDisable(false);
 					comboSelComm.setDisable(true);
@@ -149,7 +150,7 @@ public class DashboardController {
 					disableInput(true);//re-disable input since back to square one
 				} catch (AWSIotException e) {
 					// TODO Auto-generated catch block
-					e.printStackTrace();
+					//may just have to keep slamming this button
 				}
 			}
 		}else {
@@ -225,11 +226,10 @@ public class DashboardController {
 					//now I do something called set purpose
 					purpose = "AWS";
 					btnconAWS.setText("Disconnect AWS");
-					String p = "MKR_WIFI_experiment";
+
 					comboSensor.setItems(SensorsList);
 					comboProbe.setItems(ProbesList);
-					AWSIotTopic topic = new TestTopicListener(p, TestTopicQos, this);
-					client.subscribe(topic, true);
+
 					outputArea.setText("Connection Successful to:\n" + clientEndpoint);
 					writeSavedData(); //once a successful connection is made write the saved data
 
@@ -358,10 +358,14 @@ public class DashboardController {
 		}
 	}
 	public void updateOutputArea(String payload) {
+
 		if(payload.contains("retp")) {
 			Platform.runLater(() -> fillParams(payload));
 		}else {
-			Platform.runLater(() -> {outputArea.appendText(payload); if(payload.contains("!")){appendToFile();}});
+			payloads.add(payload);
+			Platform.runLater(() -> {
+				outputArea.appendText(payload); if(payload.contains("!")){appendToFile();}
+			});
 		}
 	}
 	@FXML
@@ -377,6 +381,12 @@ public class DashboardController {
 			btnSendParameters.setDisable(false);
 			btnBegin.setDisable(false);
 			btnGetParameters.setDisable(false);
+			AWSIotTopic topic = new TestTopicListener(experimentTopic+"_" +subscribedTopic, TestTopicQos, this);
+			try {
+				client.subscribe(topic, false);
+			}catch(AWSIotException e){
+				outputArea.setText("could not set subscribe topic");
+			}
 		}
 	}
 	private String validateInput() {

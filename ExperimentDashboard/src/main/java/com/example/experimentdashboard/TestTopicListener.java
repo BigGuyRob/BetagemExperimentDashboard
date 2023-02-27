@@ -13,6 +13,7 @@ import com.amazonaws.services.iot.client.AWSIotTopic;
 public class TestTopicListener extends AWSIotTopic {
 
 	DashboardController controller;
+
     public TestTopicListener(String topic, AWSIotQos qos, DashboardController controller) {
         super(topic, qos);
         this.controller = controller;

@@ -193,7 +193,7 @@
                                        </font>
                                     </Label>
                                     <Button fx:id="btnChooseFile" mnemonicParsing="false" onAction="#chooseFile" prefHeight="25.0" prefWidth="319.0" text="Choose Output File" />
-                                    <TextArea fx:id="outputArea" prefHeight="501.0" prefWidth="347.0" promptText="output" />
+                                    <TextArea fx:id="outputArea" prefHeight="459.0" prefWidth="347.0" promptText="output" />
                                  </children>
                               </VBox>
                            </children>
