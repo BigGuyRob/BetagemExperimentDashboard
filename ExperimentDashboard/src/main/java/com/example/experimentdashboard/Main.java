@@ -29,8 +29,7 @@ public class Main extends Application {
 	
 	@Override
 	public void stop(){
-	    
-	    // Save file
+	    DashboardController.finalDisconnect();
 	}
 	
 	public static void main(String[] args) {

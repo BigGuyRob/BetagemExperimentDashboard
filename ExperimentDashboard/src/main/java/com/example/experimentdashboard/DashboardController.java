@@ -130,7 +130,7 @@ public class DashboardController {
 	private static final short ARDUINO_VENDOR_ID = 0x2341;
 	private static final short MKR_PRODUCT_ID = (short) 0x8054;
 	
-	private AWSIotMqttClient client = null;
+	private static AWSIotMqttClient client = null;
 	private String subscribedTopic = "";
 	private File append = null;
 	private SerialPort myCommPort = null;
@@ -537,7 +537,7 @@ public class DashboardController {
 		comboSensor.setDisable(state);
 		comboProbe.setDisable(state);
 	}
-	public void finalDisconnect() {
+	public static void finalDisconnect() {
 		try {
 			client.disconnect();
 		} catch (AWSIotException e) {
@@ -545,6 +545,7 @@ public class DashboardController {
 			e.printStackTrace();
 		}
 	}
+
 	private void beginSerial() {
 		if(myCommPort != null) {
 			outputArea.setText("");
