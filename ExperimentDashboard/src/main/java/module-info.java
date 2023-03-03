@@ -10,6 +10,7 @@ module com.example.experimentdashboard {
     requires org.apache.commons.io;
     requires java.desktop;
 
+
     opens com.example.experimentdashboard to javafx.fxml;
     exports com.example.experimentdashboard;
 }

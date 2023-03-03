@@ -8,9 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import com.amazonaws.services.iot.client.AWSIotException;
 import com.amazonaws.services.iot.client.AWSIotMqttClient;
@@ -24,6 +22,13 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Side;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
@@ -35,6 +40,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 import javax.swing.*;
 
@@ -60,6 +66,8 @@ public class DashboardController {
 	
 	@FXML
 	private Button btnconAWS;
+	@FXML
+	private Button btnGenerateGraph;
 	@FXML 
 	private Button btnScan;
 	@FXML 
@@ -491,16 +499,19 @@ public class DashboardController {
 		txtExposureTime.setText(String.valueOf(DEFAULT_EXPOSURETIME));
 	}
 	private void appendToFile() {
-		if(append != null) {
+		if(append == null) {
+			append = new File("Experiment_data.txt");
+			btnChooseFile.setText("output to " + append.getName());
+		}
 		FileWriter fr;
-			try {
-				fr = new FileWriter(append, true);
-				fr.write(outputArea.getText());
-				fr.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		try {
+			fr = new FileWriter(append, true);
+			fr.write(outputArea.getText());
+			fr.write("\n");
+			fr.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	@FXML
@@ -732,4 +743,101 @@ public class DashboardController {
 		//now I want to put the certs observable list back together
 		comboCerts.setItems(currentCerts);
 	}
+	@FXML
+	private void generateGraph(ActionEvent event){
+		XYChart.Series[] experiment_data = createDatasetforLineChart();
+		XYChart.Series seriesON = experiment_data[0];
+		XYChart.Series seriesOFF = experiment_data[1];
+		XYChart.Series seriesDIFF = experiment_data[2];
+		LineChart viewer = createChart();
+		viewer.getData().add(seriesON);
+		viewer.getData().add(seriesOFF);
+		viewer.getData().add(seriesDIFF);
+		viewer.setLegendSide(Side.RIGHT);
+		viewer.setCreateSymbols(false);
+		viewer.setAnimated(true);
+		Stage stage = new Stage();
+		stage.setTitle("Experiment Data");
+		stage.setScene(new Scene(viewer, 700, 450));
+		stage.show();
+	}
+	private LineChart createChart(){
+		final NumberAxis xAxis = new NumberAxis();
+		final NumberAxis yAxis = new NumberAxis();
+		xAxis.setLabel("Positions");
+		yAxis.setLabel("Intensity");
+		//creating the chart
+		final LineChart<Number,Number> lineChart =
+				new LineChart<Number,Number>(xAxis,yAxis);
+		lineChart.setTitle("Experiment");
+		return lineChart;
+	}
+	private XYChart.Series[] createDatasetforLineChart( ) {
+		ObservableList<Double> positions = FXCollections.observableArrayList();
+		ObservableList<Double> AvIntensityON = FXCollections.observableArrayList();
+		ObservableList<Double> AvIntensityOFF = FXCollections.observableArrayList();
+		ObservableList<Double> AvIntensityDIFF = FXCollections.observableArrayList();
+		//here the dataset is everything in the textbox so I need to parse this data
+		//COLUMN KEY WOULD BE POSITION
+		//ROW KEY WOULD BE "AV ON" "AV OFF" and "DIFFERENCE OF AVERAGES"
+		//VALUE IS GOING TO BE the value
+		//SINCE IT GOES POSITION, AV ON INTENSITY, AV OFF INTENSITY
+		String experimentOutput = outputArea.getText();
+		Scanner scanner = new Scanner(experimentOutput);
+		boolean flag_gotten_to_data = false;
+		while(scanner.hasNextLine()){
+			String line = scanner.nextLine();
+			if(line.contains("Intensity")) {
+				flag_gotten_to_data = true;
+				line = scanner.nextLine();
+			}
+			if(flag_gotten_to_data){
+				if(line.contains("!")){
+					break;
+				}
+				String[] data = line.split(" ");
+				ArrayList<String> cleanedData = new ArrayList<String>();
+				for(String d : data) {
+					if(d.trim() != ""){
+						cleanedData.add(d);
+					}
+				}
+				//index 1 should be av on intensity
+				Double AvIntensityON_val = Double.parseDouble(cleanedData.get(1));
+				AvIntensityON.add(AvIntensityON_val);
+				//index 2 should be av off intensity
+				Double AvIntensityOFF_val = Double.parseDouble(cleanedData.get(2));
+				AvIntensityOFF.add(AvIntensityOFF_val);
+
+				AvIntensityDIFF.add(AvIntensityON_val - AvIntensityOFF_val);
+				//index 0 should be the position
+				positions.add(Double.parseDouble(cleanedData.get(0)));
+				cleanedData.clear();
+			}
+		}
+		//Then I need two sets of data
+		XYChart.Series seriesON = new XYChart.Series();
+		seriesON.setName("Average Intensity Data ON");
+		int cnt = 0;
+		for(Double intensity : AvIntensityON){ //plot average intensity on
+			seriesON.getData().add(new XYChart.Data(positions.get(cnt), intensity));
+			cnt += 1;
+		}
+		XYChart.Series seriesOFF = new XYChart.Series();
+		seriesOFF.setName("Average Intensity Data OFF");
+		cnt = 0;
+		for(Double intensity : AvIntensityOFF){ //plot average intensity on
+			seriesOFF.getData().add(new XYChart.Data(positions.get(cnt), intensity));
+			cnt += 1;
+		}
+		XYChart.Series seriesDIFF = new XYChart.Series();
+		seriesDIFF.setName("Average Intensity Data Difference");
+		cnt = 0;
+		for(Double intensity : AvIntensityDIFF){ //plot average intensity on
+			seriesDIFF.getData().add(new XYChart.Data(positions.get(cnt), intensity));
+			cnt += 1;
+		}
+		return new XYChart.Series[]{seriesON,seriesOFF, seriesDIFF};
+	}
+
 }
