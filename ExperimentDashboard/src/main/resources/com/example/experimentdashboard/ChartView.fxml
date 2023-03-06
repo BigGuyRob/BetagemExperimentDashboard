@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.scene.chart.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.experimentdashboard.ChartController">
+   <top>
+      <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+         <children>
+            <Label prefHeight="100.0" prefWidth="417.0" text="Experiment Chart View">
+               <font>
+                  <Font size="41.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+   </top>
+   <center>
+      <LineChart fx:id="chartMain" prefHeight="300.0" prefWidth="329.0" BorderPane.alignment="CENTER">
+        <xAxis>
+          <NumberAxis side="BOTTOM" />
+        </xAxis>
+        <yAxis>
+          <NumberAxis side="LEFT" />
+        </yAxis>
+      </LineChart>
+   </center>
+   <left>
+      <VBox alignment="TOP_CENTER" prefHeight="300.0" prefWidth="178.0" BorderPane.alignment="CENTER">
+         <children>
+            <Label prefHeight="17.0" prefWidth="60.0" text="Input Data" textAlignment="CENTER" />
+            <TextArea fx:id="txtInputData" prefHeight="279.0" prefWidth="100.0" />
+            <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0">
+               <children>
+                  <Label prefHeight="17.0" prefWidth="87.0" text="Export Controls" textAlignment="CENTER" />
+                  <Button mnemonicParsing="false" text="Download" />
+                  <Button fx:id="btnGeneratePDF" layoutX="64.0" layoutY="27.0" mnemonicParsing="false" onAction="#setUpPDF" prefHeight="25.0" prefWidth="79.0" text="PDF" />
+                  <MenuButton fx:id="menuTrendLines" mnemonicParsing="false" text="Trend Lines">
+                    <items>
+                    </items>
+                  </MenuButton>
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+   </left>
+</BorderPane>

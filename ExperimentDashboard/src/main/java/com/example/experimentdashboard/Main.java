@@ -6,6 +6,9 @@ import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 
+import java.io.File;
+
+import static com.example.experimentdashboard.Globals.savedDataPath;
 
 
 public class Main extends Application {
@@ -19,6 +22,8 @@ public class Main extends Application {
 			Scene scene = new Scene(root,650,650);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			primaryStage.setScene(scene);
+			File f = new File(savedDataPath +"certList.txt");
+			f.createNewFile();
 			primaryStage.show();
 			primaryStage.setMaximized(true);
 		} catch(Exception e) {

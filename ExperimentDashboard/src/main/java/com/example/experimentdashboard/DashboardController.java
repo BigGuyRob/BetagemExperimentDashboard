@@ -22,6 +22,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -39,17 +40,20 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import javax.swing.*;
+
+import static com.example.experimentdashboard.Globals.savedDataPath;
 
 public class DashboardController {
 	@FXML
 	private ComboBox<String> comboSelComm;
 	@FXML
 	private ComboBox<String> comboCerts;
-	File certLocations = new File("C:/Data/certList.txt");
+	File certLocations = new File(savedDataPath +"certList.txt");
 	private ObservableList<String> certs = FXCollections.observableArrayList("Private Key","Root Certificate","Device List");
 	private ObservableList<String> Requiredcerts = FXCollections.observableArrayList("Private Key","Root Certificate","Device List");
 	boolean certFill = false;
@@ -166,6 +170,8 @@ public class DashboardController {
 			try {
 					List<String> paths = null;
 					try {
+						File f = new File(certLocations.getPath());
+						f.createNewFile();
 						paths = Files.readAllLines(Paths.get(certLocations.getPath()));
 					} catch (IOException e){ flag = true;}
 					privateKeyPath = paths.get(0);
@@ -174,7 +180,7 @@ public class DashboardController {
 					certs.clear();
 					certs.addAll(paths);
 					comboCerts.setItems(certs);
-			} catch (IndexOutOfBoundsException e){
+			} catch (Exception e){
 				//if we couldn't read data that doesnt mean we didnt just add the data
 
 			}
@@ -542,7 +548,7 @@ public class DashboardController {
 			client.disconnect();
 		} catch (AWSIotException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+
 		}
 	}
 
@@ -746,34 +752,30 @@ public class DashboardController {
 	}
 	@FXML
 	private void generateGraph(ActionEvent event){
-		XYChart.Series[] experiment_data = createDatasetforLineChart();
-		XYChart.Series seriesON = experiment_data[0];
-		XYChart.Series seriesOFF = experiment_data[1];
-		XYChart.Series seriesDIFF = experiment_data[2];
-		LineChart viewer = createChart();
-		viewer.getData().add(seriesON);
-		viewer.getData().add(seriesOFF);
-		viewer.getData().add(seriesDIFF);
-		viewer.setLegendSide(Side.RIGHT);
-		viewer.setCreateSymbols(false);
-		viewer.setAnimated(true);
-		Stage stage = new Stage();
-		stage.setTitle("Experiment Data");
-		stage.setScene(new Scene(viewer, 700, 450));
-		stage.show();
+
+		ObservableList<XYChart.Series> seriesSet = createDatasetforLineChart();
+		XYChart.Series ON = seriesSet.get(0);
+		XYChart.Series OFF = seriesSet.get(1);
+		XYChart.Series DIFF = seriesSet.get(2);
+		try{
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("ChartView.fxml"));
+			BorderPane Chart = (BorderPane) loader.load();
+			ChartController chartController = loader.getController();
+			Scene ChartScene = new Scene(Chart, 700,700);
+			Stage newstage = new Stage();
+			newstage.setTitle("Experiment View");
+			newstage.setScene(ChartScene);
+			newstage.show();
+			chartController.setInputData(outputArea.getText());
+			chartController.setChart(seriesSet);
+
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+
 	}
-	private LineChart createChart(){
-		final NumberAxis xAxis = new NumberAxis();
-		final NumberAxis yAxis = new NumberAxis();
-		xAxis.setLabel("Positions");
-		yAxis.setLabel("Intensity");
-		//creating the chart
-		final LineChart<Number,Number> lineChart =
-				new LineChart<Number,Number>(xAxis,yAxis);
-		lineChart.setTitle("Experiment");
-		return lineChart;
-	}
-	private XYChart.Series[] createDatasetforLineChart( ) {
+
+	private ObservableList<XYChart.Series> createDatasetforLineChart( ) {
 		ObservableList<Double> positions = FXCollections.observableArrayList();
 		ObservableList<Double> AvIntensityON = FXCollections.observableArrayList();
 		ObservableList<Double> AvIntensityOFF = FXCollections.observableArrayList();
@@ -838,7 +840,11 @@ public class DashboardController {
 			seriesDIFF.getData().add(new XYChart.Data(positions.get(cnt), intensity));
 			cnt += 1;
 		}
-		return new XYChart.Series[]{seriesON,seriesOFF, seriesDIFF};
+		ObservableList<XYChart.Series> retSeries = FXCollections.observableArrayList();
+		retSeries.add(seriesON);
+		retSeries.add(seriesOFF);
+		retSeries.add(seriesDIFF);
+		return retSeries;
 	}
 
 }
