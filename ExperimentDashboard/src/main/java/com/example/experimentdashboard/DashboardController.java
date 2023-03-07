@@ -18,6 +18,7 @@ import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortDataListener;
 import com.fazecast.jSerialComm.SerialPortEvent;
 import javafx.application.Platform;
+import javafx.beans.binding.ObjectExpression;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -41,6 +42,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
@@ -823,21 +826,27 @@ public class DashboardController {
 		seriesON.setName("Average Intensity Data ON");
 		int cnt = 0;
 		for(Double intensity : AvIntensityON){ //plot average intensity on
-			seriesON.getData().add(new XYChart.Data(positions.get(cnt), intensity));
+			var data = new XYChart.Data(positions.get(cnt), intensity);
+			data.setNode(createDataNode(data.YValueProperty()));
+			seriesON.getData().add(data);
 			cnt += 1;
 		}
 		XYChart.Series seriesOFF = new XYChart.Series();
 		seriesOFF.setName("Average Intensity Data OFF");
 		cnt = 0;
 		for(Double intensity : AvIntensityOFF){ //plot average intensity on
-			seriesOFF.getData().add(new XYChart.Data(positions.get(cnt), intensity));
+			var data = new XYChart.Data(positions.get(cnt), intensity);
+			data.setNode(createDataNode(data.YValueProperty()));
+			seriesOFF.getData().add(data);
 			cnt += 1;
 		}
 		XYChart.Series seriesDIFF = new XYChart.Series();
 		seriesDIFF.setName("Average Intensity Data Difference");
 		cnt = 0;
 		for(Double intensity : AvIntensityDIFF){ //plot average intensity on
-			seriesDIFF.getData().add(new XYChart.Data(positions.get(cnt), intensity));
+			var data = new XYChart.Data(positions.get(cnt), intensity);
+			data.setNode(createDataNode(data.YValueProperty()));
+			seriesDIFF.getData().add(data);
 			cnt += 1;
 		}
 		ObservableList<XYChart.Series> retSeries = FXCollections.observableArrayList();
@@ -845,6 +854,17 @@ public class DashboardController {
 		retSeries.add(seriesOFF);
 		retSeries.add(seriesDIFF);
 		return retSeries;
+	}
+
+	private static Node createDataNode(ObjectExpression<Number> value) {
+		var label = new Label();
+		label.textProperty().bind(value.asString("%,.2f"));
+		var pane = new Pane(label);
+		pane.setShape(new Circle(6.0));
+		pane.setScaleShape(false);
+		label.translateYProperty().bind(label.heightProperty().divide(-1.5));
+
+		return pane;
 	}
 
 }

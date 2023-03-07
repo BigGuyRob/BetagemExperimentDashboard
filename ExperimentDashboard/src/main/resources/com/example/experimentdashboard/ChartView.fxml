@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.text.*?>
-<?import javafx.scene.chart.*?>
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.experimentdashboard.ChartController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="559.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.experimentdashboard.ChartController">
    <top>
       <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
          <children>
@@ -35,7 +38,7 @@
          <children>
             <Label prefHeight="17.0" prefWidth="60.0" text="Input Data" textAlignment="CENTER" />
             <TextArea fx:id="txtInputData" prefHeight="279.0" prefWidth="100.0" />
-            <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0">
+            <VBox alignment="TOP_CENTER" prefHeight="191.0" prefWidth="178.0">
                <children>
                   <Label prefHeight="17.0" prefWidth="87.0" text="Export Controls" textAlignment="CENTER" />
                   <Button mnemonicParsing="false" text="Download" />
@@ -44,6 +47,19 @@
                     <items>
                     </items>
                   </MenuButton>
+                  <HBox prefHeight="29.0" prefWidth="178.0">
+                     <children>
+                        <MenuButton fx:id="menuAddTrend" mnemonicParsing="false" text="Trend">
+                          <items>
+                          </items>
+                        </MenuButton>
+                        <MenuButton fx:id="menuOnSeries" mnemonicParsing="false" text="ON">
+                          <items>
+                          </items>
+                        </MenuButton>
+                     </children>
+                  </HBox>
+                  <Button fx:id="btnAddTrend" mnemonicParsing="false" onAction="#addTrend" text="ADD" />
                </children>
             </VBox>
          </children>
