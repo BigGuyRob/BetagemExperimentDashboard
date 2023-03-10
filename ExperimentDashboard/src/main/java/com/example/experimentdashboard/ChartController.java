@@ -10,19 +10,27 @@ import javafx.geometry.Rectangle2D;
 import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
+import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DataFormat;
 import javafx.scene.layout.Pane;
 import javafx.scene.robot.Robot;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
+import javax.imageio.ImageIO;
 import javax.swing.text.Document;
+import java.io.File;
 import java.io.FileOutputStream;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.io.IOException;
+import javafx.embed.swing.SwingFXUtils;
 
 public class ChartController {
     private DashboardController ds;
@@ -51,7 +59,7 @@ public class ChartController {
 
     public void setChart(ObservableList<XYChart.Series> series){
         addAllSeries(series);
-        chartMain.setLegendSide(Side.RIGHT);
+        chartMain.setLegendSide(Side.BOTTOM);
         chartMain.getXAxis().setLabel("Positions");
         chartMain.getYAxis().setLabel("Intensity");
         chartMain.setTitle("Experiment");
@@ -224,13 +232,9 @@ public class ChartController {
 
     @FXML
     private void setUpPDF(ActionEvent e){
-        Robot robot = new Robot();
-        Stage thisStage = (Stage) btnGeneratePDF.getScene().getWindow();
-        Scene currentScene = thisStage.sceneProperty().get();
-        int width = (int) currentScene.widthProperty().get();
-        int height = (int) currentScene.heightProperty().get();
-        WritableImage img = currentScene.snapshot(new WritableImage(width, height));
-        experiment_pdf pdf = new experiment_pdf(img);
+
+        WritableImage img = chartMain.snapshot(new SnapshotParameters(), null);
+        experiment_pdf pdf = new experiment_pdf(img, data);
         String errorText = pdf.export();
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("PDF");
@@ -238,6 +242,17 @@ public class ChartController {
         alert.showAndWait();
     }
 
+    @FXML
+    private void downloadChart(ActionEvent e){
+        WritableImage img = chartMain.snapshot(new SnapshotParameters(), null);
+        File file = new File("chart.png");
+
+        try {
+            ImageIO.write(SwingFXUtils.fromFXImage(img, null), "png", file);
+        } catch (IOException f) {
+            // TODO: handle exception here
+        }
+    }
 
     private static Node createDataNode(ObjectExpression<Number> value) {
         var label = new Label();

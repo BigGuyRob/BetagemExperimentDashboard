@@ -10,6 +10,9 @@ module com.example.experimentdashboard {
     requires org.apache.commons.io;
     requires java.desktop;
     requires itextpdf;
+    requires layout;
+    requires javafx.swing;
+    requires io;
 
 
     opens com.example.experimentdashboard to javafx.fxml;

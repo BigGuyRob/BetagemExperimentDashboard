@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 <?import javafx.scene.chart.LineChart?>
 <?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.control.Button?>
@@ -11,7 +16,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="559.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.experimentdashboard.ChartController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="559.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.experimentdashboard.ChartController">
    <top>
       <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
          <children>
@@ -41,7 +46,7 @@
             <VBox alignment="TOP_CENTER" prefHeight="191.0" prefWidth="178.0">
                <children>
                   <Label prefHeight="17.0" prefWidth="87.0" text="Export Controls" textAlignment="CENTER" />
-                  <Button mnemonicParsing="false" text="Download" />
+                  <Button mnemonicParsing="false" onAction="#downloadChart" text="Download" />
                   <Button fx:id="btnGeneratePDF" layoutX="64.0" layoutY="27.0" mnemonicParsing="false" onAction="#setUpPDF" prefHeight="25.0" prefWidth="79.0" text="PDF" />
                   <MenuButton fx:id="menuTrendLines" mnemonicParsing="false" text="Trend Lines">
                     <items>
